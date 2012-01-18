@@ -46,6 +46,10 @@ class AccessToken
 	def self.find_by_token(token)
     self.first(conditions: { token: token })
   end
+  
+  def self.find_by_resource_owner_id(resource_owner_id)
+    puts self.first(conditions: { resource_owner_id: resource_owner_id })
+  end
 
   def token_type
     "bearer"

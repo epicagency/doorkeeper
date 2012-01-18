@@ -1,32 +1,34 @@
 module Doorkeeper::OAuth
-  class AccessTokenRequest
+  class PasswordAccessTokenRequest
     include Doorkeeper::Validations
+    include Doorkeeper::OAuth::Helpers
 
     ATTRIBUTES = [
       :client_id,
       :client_secret,
       :grant_type,
-      :code,
-      :redirect_uri,
-      :refresh_token
+      :username,
+      :password,
+			:scope
     ]
 
     validate :attributes,   :error => :invalid_request
     validate :grant_type,   :error => :unsupported_grant_type
     validate :client,       :error => :invalid_client
-    validate :grant,        :error => :invalid_grant
-    validate :redirect_uri, :error => :invalid_grant
+    validate :scope,        :error => :invalid_scope
 
     attr_accessor *ATTRIBUTES
+    attr_accessor :resource_owner
 
-    def initialize(attributes = {})
+    def initialize(owner, attributes = {})
       ATTRIBUTES.each { |attr| instance_variable_set("@#{attr}", attributes[attr]) }
+      @resource_owner = owner
+			@scope          ||= Doorkeeper.configuration.default_scope_string
       validate
     end
 
     def authorize
       if valid?
-        revoke_base_token
         create_access_token
       end
     end
@@ -60,70 +62,46 @@ module Doorkeeper::OAuth
       }
     end
 
-    private
-
-    def revoke_base_token
-      base_token.revoke
-    end
-
     def client
       @client ||= Application.find_by_uid_and_secret(@client_id, @client_secret)
     end
 
-    def base_token
-      @base_token ||= refresh_token? ? token_via_refresh_token : token_via_authorization_code
-    end
-
-    def token_via_authorization_code
-      AccessGrant.find_by_token(code)
-    end
-
-    def token_via_refresh_token
-      AccessToken.find_by_refresh_token(refresh_token)
-    end
+    private
 
     def create_access_token
       @access_token = AccessToken.create!({
         :application_id    => client.id,
-        :resource_owner_id => base_token.resource_owner_id,
-        :scopes            => base_token.scopes_string,
+        :resource_owner_id => @resource_owner.id,
+        :scopes            => @scope,
         :expires_in        => configuration.access_token_expires_in,
         :use_refresh_token => refresh_token_enabled?
       })
     end
-
-    def validate_attributes
-      return false unless grant_type.present?
-      if refresh_token_enabled? && refresh_token?
-        refresh_token.present?
-      else
-        code.present? && redirect_uri.present?
-      end
-    end
-
+    
     def refresh_token_enabled?
       configuration.refresh_token_enabled?
     end
+    
+    def has_scope?
+      Doorkeeper.configuration.scopes.all.present?
+    end
 
-    def refresh_token?
-      grant_type == "refresh_token"
+    def validate_attributes
+      return false unless grant_type.present?
+      username.present? && password.present?
+    end
+
+    def validate_grant_type
+      %w(password).include? grant_type
     end
 
     def validate_client
       !!client
     end
-
-    def validate_grant
-      return false unless base_token && base_token.application_id == client.id
-      refresh_token? ? !base_token.revoked? : base_token.accessible?
-    end
-
-    def validate_redirect_uri
-      refresh_token? ? true : base_token.redirect_uri == redirect_uri
-    end
-
-    def validate_grant_type
-      %w(authorization_code refresh_token).include? grant_type
+    
+    def validate_scope
+      return true unless has_scope?
+      ScopeChecker.valid?(scope, configuration.scopes)
     end
 
     def error_description

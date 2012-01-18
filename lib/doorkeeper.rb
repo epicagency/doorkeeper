@@ -11,6 +11,7 @@ module Doorkeeper
     autoload :RandomString,         "doorkeeper/oauth/random_string"
     autoload :AuthorizationRequest, "doorkeeper/oauth/authorization_request"
     autoload :AccessTokenRequest,   "doorkeeper/oauth/access_token_request"
+    autoload :PasswordAccessTokenRequest,   "doorkeeper/oauth/password_access_token_request"
     autoload :Authorization,        "doorkeeper/oauth/authorization"
 
     module Helpers

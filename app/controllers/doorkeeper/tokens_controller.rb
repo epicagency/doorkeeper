@@ -17,7 +17,11 @@ class Doorkeeper::TokensController < Doorkeeper::ApplicationController
   private
 
   def token
-    owner = authenticate_resource_owner! unless params['grant_type'].nil? or params['grant_type'] != 'password'
-    @token ||= Doorkeeper::OAuth::AccessTokenRequest.new(params, )
+    if params['grant_type'].nil? || params['grant_type'] != 'password'
+      @token ||= Doorkeeper::OAuth::AccessTokenRequest.new(params)
+    else
+      owner = authenticate_resource_owner!
+      @token ||= Doorkeeper::OAuth::PasswordAccessTokenRequest.new(owner, params)
+    end
   end
 end
