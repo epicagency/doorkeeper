@@ -10,13 +10,14 @@ class Doorkeeper::TokensController < Doorkeeper::ApplicationController
     if token.authorize
       render :json => token.authorization
     else
-      render :json => token.error_response
+      render :json => token.error_response, :status => :unauthorized
     end
   end
 
   private
 
   def token
-    @token ||= Doorkeeper::OAuth::AccessTokenRequest.new(params)
+    owner = authenticate_resource_owner! unless params['grant_type'].nil? or params['grant_type'] != 'password'
+    @token ||= Doorkeeper::OAuth::AccessTokenRequest.new(params, )
   end
 end
