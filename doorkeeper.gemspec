@@ -5,9 +5,9 @@ require "doorkeeper/version"
 Gem::Specification.new do |s|
   s.name        = "doorkeeper"
   s.version     = Doorkeeper::VERSION
-  s.authors     = ["Felipe Elias Philipp", "Piotr Jakubowski"]
-  s.email       = ["felipe@applicake.com", "piotr.jakubowski@applicake.com"]
-  s.homepage    = "https://github.com/applicake/doorkeeper"
+  s.authors     = ["Fabrice Lejeune", "Hugues Lismonde", "Felipe Elias Philipp", "Piotr Jakubowski"]
+  s.email       = ["fabrice@epic.net", "hugues@epic.net", "felipe@applicake.com", "piotr.jakubowski@applicake.com"]
+  s.homepage    = "https://github.com/epicagency/doorkeeper"
   s.summary     = "Doorkeeper is an OAuth 2 provider for Rails."
   s.description = "Doorkeeper is an OAuth 2 provider for Rails."
 
@@ -15,7 +15,7 @@ Gem::Specification.new do |s|
 
   s.add_dependency "rails", ">= 3.1.1", "< 4.0"
 
-  s.add_development_dependency "sqlite3"
+  s.add_development_dependency "mongoid"
   s.add_development_dependency "rspec-rails", "~> 2.8.1"
   s.add_development_dependency "capybara"
   s.add_development_dependency "generator_spec"

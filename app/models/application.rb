@@ -1,11 +1,18 @@
-class Application < ActiveRecord::Base
+class Application
+  include Mongoid::Document
+  include Mongoid::Timestamps
   include Doorkeeper::OAuth::RandomString
 
-  self.table_name = :oauth_applications
+  store_in = :oauth_applications
+  
+  field :name, :type => String
+  field :uid, :type => String
+  field :secret, :type => String
+  field :redirect_uri, :type => String
 
   has_many :access_grants
-  has_many :authorized_tokens, :class_name => "AccessToken", :conditions => { :revoked_at => nil }
-  has_many :authorized_applications, :through => :authorized_tokens, :source => :application
+  has_many :authorized_tokens, :class_name => "AccessToken"#, :conditions => { :revoked_at => nil }
+  has_many :authorized_applications, :class_name => "AccessToken"#, :through => :authorized_tokens, :source => :application
 
   validates :name, :secret, :redirect_uri, :presence => true
   validates :uid, :presence => true, :uniqueness => true
@@ -15,6 +22,14 @@ class Application < ActiveRecord::Base
 
   def self.authorized_for(resource_owner)
     joins(:authorized_applications).where(:oauth_access_tokens => { :resource_owner_id => resource_owner.id })
+  end
+  
+  def self.find_by_uid(uid)
+    self.first(conditions: { uid: uid })
+  end
+
+	def self.find_by_uid_and_secret(uid, secret)
+    self.first(conditions: { uid: uid, secret: secret })
   end
 
   def validate_redirect_uri

@@ -1,8 +1,18 @@
-class AccessToken < ActiveRecord::Base
+class AccessToken
+  include Mongoid::Document
+  include Mongoid::Timestamps
   include Doorkeeper::OAuth::RandomString
   include Doorkeeper::OAuth::Helpers
 
-  self.table_name = :oauth_access_tokens
+  store_in = :oauth_access_tokens
+
+	field :resource_owner_id, :type => Hash  
+  field :application_id, :type => Hash  
+  field :token, :type => String
+  field :refresh_token, :type => String
+  field :expires_in, :type => Integer
+	field :revoked_at, :type => DateTime
+	field :scopes, :type => String
 
   belongs_to :application
 
@@ -27,6 +37,14 @@ class AccessToken < ActiveRecord::Base
             limit(1).
             first
     token && ScopeChecker.matches?(token.scopes, scopes)
+  end
+
+	def self.find_by_refresh_token(refresh_token)
+    self.first(conditions: { refresh_token: refresh_token })
+  end
+
+	def self.find_by_token(token)
+    self.first(conditions: { token: token })
   end
 
   def token_type

@@ -1,7 +1,17 @@
-class AccessGrant < ActiveRecord::Base
+class AccessGrant
+  include Mongoid::Document
+  include Mongoid::Timestamps
   include Doorkeeper::OAuth::RandomString
 
-  self.table_name = :oauth_access_grants
+  store_in = :oauth_access_grants
+  
+  field :resource_owner_id, :type => Hash  
+  field :application_id, :type => Hash  
+  field :token, :type => String
+  field :expires_in, :type => Integer
+  field :redirect_uri, :type => String
+	field :revoked_at, :type => DateTime
+	field :scopes, :type => String
 
   belongs_to :application
 
@@ -32,6 +42,10 @@ class AccessGrant < ActiveRecord::Base
   def scopes_string
     self[:scopes]
   end
+  
+  def self.find_by_token(token)
+    self.first(conditions: { token: token })
+  end  
 
   private
 

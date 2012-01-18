@@ -1,6 +1,6 @@
 # Doorkeeper - awesome oauth provider for your Rails app.
 
-[![Build Status](https://secure.travis-ci.org/applicake/doorkeeper.png)](http://travis-ci.org/applicake/doorkeeper)
+<span style="font-weight: bold; color: red; font-size: 14px;">Attention. This is an incompatible fork of Doorkeeper providing support for Mongoid and password-based token generation. You can't use it as-is in a (my | postgre)SQL(lite) application.</span>
 
 Doorkeeper is a gem that makes it easy to introduce OAuth 2 provider functionality to your application.
 
